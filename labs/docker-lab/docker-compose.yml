@@ -1,0 +1,197 @@
+version: '3.8'
+
+networks:
+  security-lab:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
+
+services:
+  # ============================================
+  # 漏洞靶机 - Web安全练习
+  # ============================================
+  
+  # DVWA - Damn Vulnerable Web Application
+  dvwa:
+    image: vulnerables/web-dvwa
+    container_name: dvwa
+    ports:
+      - "8080:80"
+    networks:
+      security-lab:
+        ipv4_address: 172.20.0.10
+    environment:
+      - DB_SERVER=db
+      - DB_USER=dvwa
+      - DB_PASS=dvwa
+      - DB_NAME=dvwa
+    depends_on:
+      - db
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # SQLi Labs - SQL注入专项练习
+  sqli-labs:
+    image: acgpiano/sqli-labs
+    container_name: sqli-labs
+    ports:
+      - "8081:80"
+    networks:
+      security-lab:
+        ipv4_address: 172.20.0.11
+    restart: unless-stopped
+
+  # bWAPP - 综合漏洞练习平台
+  bwapp:
+    image: raesene/bwapp
+    container_name: bwapp
+    ports:
+      - "8082:80"
+    networks:
+      security-lab:
+        ipv4_address: 172.20.0.12
+    restart: unless-stopped
+
+  # WebGoat - OWASP官方练习平台
+  webgoat:
+    image: webgoat/webgoat
+    container_name: webgoat
+    ports:
+      - "8083:8080"
+      - "9090:9090"
+    networks:
+      security-lab:
+        ipv4_address: 172.20.0.13
+    restart: unless-stopped
+
+  # Juice Shop - 现代Web应用漏洞练习
+  juice-shop:
+    image: bkimminich/juice-shop
+    container_name: juice-shop
+    ports:
+      - "3000:3000"
+    networks:
+      security-lab:
+        ipv4_address: 172.20.0.14
+    restart: unless-stopped
+
+  # ============================================
+  # 支持服务
+  # ============================================
+  
+  # MySQL数据库
+  db:
+    image: mysql:5.7
+    container_name: mysql-db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: dvwa
+      MYSQL_USER: dvwa
+      MYSQL_PASSWORD: dvwa
+    networks:
+      security-lab:
+        ipv4_address: 172.20.0.20
+    volumes:
+      - db-data:/var/lib/mysql
+    restart: unless-stopped
+
+  # Redis缓存服务
+  redis:
+    image: redis:alpine
+    container_name: redis-server
+    ports:
+      - "6379:6379"
+    networks:
+      security-lab:
+        ipv4_address: 172.20.0.21
+    restart: unless-stopped
+
+  # ============================================
+  # 攻击工具容器
+  # ============================================
+  
+  # Kali Linux 工具容器（轻量版）
+  kali:
+    image: kalilinux/kali-rolling
+    container_name: kali-tools
+    networks:
+      security-lab:
+        ipv4_address: 172.20.0.100
+    volumes:
+      - ./tools:/root/tools
+      - ./wordlists:/root/wordlists
+      - ./output:/root/output
+    stdin_open: true
+    tty: true
+    command: /bin/bash
+    restart: unless-stopped
+
+  # OWASP ZAP - 自动化Web扫描
+  zap:
+    image: owasp/zap2docker-stable
+    container_name: zap-scanner
+    ports:
+      - "8090:8090"
+      - "8091:8091"
+    networks:
+      security-lab:
+        ipv4_address: 172.20.0.101
+    command: zap-webswing.sh
+    restart: unless-stopped
+
+  # Nuclei - 漏洞扫描器
+  nuclei:
+    image: projectdiscovery/nuclei:latest
+    container_name: nuclei-scanner
+    networks:
+      security-lab:
+        ipv4_address: 172.20.0.102
+    volumes:
+      - ./nuclei-templates:/root/nuclei-templates
+      - ./output:/root/output
+    restart: unless-stopped
+
+  # ============================================
+  # 监控和管理工具
+  # ============================================
+  
+  # Portainer - Docker可视化管理
+  portainer:
+    image: portainer/portainer-ce
+    container_name: portainer
+    ports:
+      - "9000:9000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer-data:/data
+    networks:
+      security-lab:
+        ipv4_address: 172.20.0.200
+    restart: unless-stopped
+
+  # Web界面监控
+  webtop:
+    image: lscr.io/linuxserver/webtop:ubuntu-kde
+    container_name: webtop
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Shanghai
+    volumes:
+      - webtop-config:/config
+    ports:
+      - "3010:3000"
+    networks:
+      security-lab:
+        ipv4_address: 172.20.0.201
+    restart: unless-stopped
+
+volumes:
+  db-data:
+  portainer-data:
+  webtop-config:

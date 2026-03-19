@@ -1,0 +1,21 @@
+# 此目录用于存放自定义工具和脚本
+
+## 建议目录结构
+
+```
+tools/
+├── scanners/          # 扫描脚本
+├── exploits/          # 利用脚本
+├── payloads/          # Payload 集合
+├── wordlists/         # 字典文件
+└── scripts/           # 自动化脚本
+```
+
+## 使用方式
+
+这些工具会自动映射到 Kali 容器的 `/root/tools/` 目录：
+
+```bash
+docker exec -it kali-tools bash
+cd /root/tools/
+```

@@ -1,0 +1,21 @@
+# 字典文件目录
+
+## 常用字典下载
+
+```bash
+# 进入 Kali 容器
+docker exec -it kali-tools bash
+
+# SecLists 字典集
+apt install -y seclists
+ls /usr/share/seclists/
+
+# 常用字典位置
+/usr/share/wordlists/dirb/common.txt        # 目录扫描
+/usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt
+/usr/share/seclists/Passwords/Common-Credentials/10-million-password-list-top-100.txt
+```
+
+## 自定义字典
+
+可以将自定义字典放在此目录，会映射到容器的 `/root/wordlists/`

@@ -1,0 +1,19 @@
+# 输出结果目录
+
+扫描结果、报告等输出文件存放在这里
+
+## 目录映射
+
+- 主机目录: `./output/`
+- 容器目录: `/root/output/`
+
+## 常见输出文件
+
+```
+output/
+├── nmap-scans/        # Nmap 扫描结果
+├── sqlmap-output/     # SQLMap 输出
+├── zap-reports/       # ZAP 扫描报告
+├── nuclei-results/    # Nuclei 扫描结果
+└── screenshots/       # 截图证据
+```
